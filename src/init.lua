@@ -41,6 +41,26 @@ function HeatUp.new(name: string)
 		return nil
 	end
 
+	function Store:_commitLocation()
+		local exclusiveLowerBound = nil
+		dPrint("[COMMIT] Committing locations for", self._name)
+		while true do
+			local items = self._memory:GetRangeAsync(Enum.SortDirection.Ascending, 100, exclusiveLowerBound)
+			for _, item in ipairs(items) do
+				dPrint("[COMMIT]   ",item.key, item.value)
+				self._data:SetAsync(item.key, item.value)
+			end
+
+			-- if the call returned less than a hundred items it means we’ve reached the end of the map
+			if #items < 100 then
+				break
+			end
+
+			-- the last retrieved key is the exclusive lower bound for the next iteration
+			exclusiveLowerBound = items[#items].key
+		end
+	end
+
 	function Store:Get(key: string, default: any)
 		local location = self:_getLocation(key)
 		if location == nil then return nil end
@@ -74,6 +94,7 @@ function HeatUp.new(name: string)
 	end
 
 	function Store:Destroy()
+		self:_commitLocation()
 		HeatUp._cache[name] = nil
 		table.clear(self)
 	end
@@ -84,23 +105,7 @@ end
 
 function HeatUp.commitLocations()
 	for _, Store in pairs(HeatUp._cache) do
-		local exclusiveLowerBound = nil
-		dPrint("[COMMIT] Committing locations for", Store._name)
-		while true do
-			local items = Store._memory:GetRangeAsync(Enum.SortDirection.Ascending, 100, exclusiveLowerBound)
-			for _, item in ipairs(items) do
-				dPrint("  ",item.key, item.value)
-				Store._data:SetAsync(item.key, item.value)
-			end
-
-			-- if the call returned less than a hundred items it means we’ve reached the end of the map
-			if #items < 100 then
-				break
-			end
-
-			-- the last retrieved key is the exclusive lower bound for the next iteration
-			exclusiveLowerBound = items[#items].key
-		end
+		task.spawn(Store._commitLocation, Store)
 	end
 end
 
@@ -110,5 +115,6 @@ task.spawn(function()
 		HeatUp.commitLocations()
 	end
 end)
+game:BindToClose(HeatUp.commitLocations)
 
 return HeatUp
