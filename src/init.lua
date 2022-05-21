@@ -75,13 +75,19 @@ function HeatUp.new(name: string)
 		local hash = HashLib.shake128(HttpService:JSONEncode(value), 20)
 		local location = {
 			hash = hash,
-			timestamp = DateTime.now().UnixTimestamp,
+			timestamp = DateTime.now().UnixTimestampMillis,
 		}
 
 		dPrint("[SET] Location:", location, "Value:", value)
 
-		self._memory:SetAsync(key, location, 2592000)
 		self._data:SetAsync(location.hash, value)
+		self._memory:UpdateAsync(key, function(oldLocation)
+			if oldLocation and oldLocation.timestamp > location.timestamp then
+				-- Stored is more recent, cancel this
+				return nil
+			end
+			return location
+		end, 2592000)
 	end
 
 	function Store:Update(key: string, transformer: (any) -> any)
@@ -111,7 +117,7 @@ end
 
 -- Prevent memory expiry losing the location by periodically mirroring to datastore
 task.spawn(function()
-	while task.wait(6+math.random(100,400)/100) do
+	while task.wait(6 + math.random(100,400)/100) do
 		HeatUp.commitLocations()
 	end
 end)
