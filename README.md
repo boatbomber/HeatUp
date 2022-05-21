@@ -21,7 +21,7 @@ local Store = HeatUp.new("testingHeatUp")
 while true do
 	Store:Update("hotKey", function(old)
 		local new = (old or {})
-		new[DateTime.now().UnixTimestampMillis] = HttpService:GenerateGUID(false)
+		new[HttpService:GenerateGUID(false)] = DateTime.now().UnixTimestampMillis
 		print(string.format("Updated value: %.2fkb", #HttpService:JSONEncode(new)/1024))
 		return new
 	end)
