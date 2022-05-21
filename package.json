@@ -1,0 +1,15 @@
+{
+    "name": "@boatbomber/heatup",
+    "version": "0.1.0",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/boatbomber/HeatUp.git"
+    },
+    "contributors": [
+        "boatbomber"
+    ],
+    "bugs": {
+        "url": "https://github.com/boatbomber/HeatUp/issues"
+    }
+}
