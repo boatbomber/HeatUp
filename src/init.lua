@@ -2,8 +2,7 @@ local MemoryStoreService = game:GetService("MemoryStoreService")
 local DataStoreService = game:GetService("DataStoreService")
 local HttpService = game:GetService("HttpService")
 
-local Packages = script.Packages
-local HashLib = require(Packages.HashLib)
+local HashLib = require(script.Parent.HashLib)
 
 local HeatUp = {
 	_cache = {},
