@@ -89,8 +89,10 @@ function HeatUp.new(name: string)
 		end, 2592000)
 	end
 
-	function Store:Update(key: string, transformer: (any) -> any)
-		self:Set(key, transformer(self:Get(key)))
+	function Store:Update(key: string, transformer: (any?) -> any?)
+		local newValue = transformer(self:Get(key))
+		if newValue == nil then return end
+		self:Set(key, newValue)
 	end
 
 	function Store:Remove(key: string)
